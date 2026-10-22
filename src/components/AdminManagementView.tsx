@@ -108,7 +108,7 @@ export const AdminManagementView: React.FC<AdminManagementViewProps> = ({ onBack
   const [agents, setAgents] = useState<LiveAgent[]>(MOCK_LIVE_AGENTS);
   const [recordings, setRecordings] = useState<CallRecording[]>(MOCK_RECORDINGS);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>('SOLAR_OUT_Q4');
-  const [activeTab, setActiveTab] = useState<'recordings' | 'realtime' | 'campaigns'>('recordings');
+  const [activeTab, setActiveTab] = useState<'recordings' | 'realtime' | 'campaigns' | 'carriers'>('recordings');
   
   // Dynamic IP Widget State (Handling Pakistan dynamic ISP IP shifts)
   const [publicIp, setPublicIp] = useState('39.45.182.94');
@@ -287,6 +287,14 @@ export const AdminManagementView: React.FC<AdminManagementViewProps> = ({ onBack
               }`}
             >
               Campaign Pacing
+            </button>
+            <button
+              onClick={() => setActiveTab('carriers')}
+              className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                activeTab === 'carriers' ? 'bg-indigo-600 text-white font-semibold' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Carrier Trunks & WebRTC
             </button>
           </div>
 
@@ -680,6 +688,148 @@ export const AdminManagementView: React.FC<AdminManagementViewProps> = ({ onBack
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Carrier Trunks & WebRTC Tab */}
+      {activeTab === 'carriers' && (
+        <div className="bg-slate-800/90 border border-slate-700 rounded-2xl p-6 shadow-xl space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-700/60">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-center">
+                <Server className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">VoIP Carrier Trunks & WebRTC Gateways</h3>
+                <p className="text-xs text-slate-400">
+                  Connect real telephone carriers (Twilio, Telnyx, PTCL, Nayatel) to VICIdial cluster <code className="text-sky-300 font-mono">dialer.gntechnos.com</code>.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1.5 rounded-xl bg-emerald-950/70 border border-emerald-800/50 text-emerald-400 text-xs font-mono font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Trunks Online (3 Active)</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Active Carrier Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <div className="p-4 bg-slate-900 rounded-xl border border-slate-700/60 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="text-sm font-bold text-white">PTCL / Nayatel Fiber SIP</h4>
+                  <span className="text-[11px] font-mono text-emerald-400">Active · RTT: 7.2ms</span>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-emerald-300 font-mono font-bold">
+                  PRIMARY
+                </span>
+              </div>
+              <div className="text-xs text-slate-400 space-y-1 font-mono">
+                <div>Route: <strong className="text-slate-200">Pakistan (+92) Local</strong></div>
+                <div>Channels: <strong className="text-white">64 / 120</strong></div>
+                <div>Dial Prefix: <strong className="text-cyan-300">923 / 03</strong></div>
+              </div>
+              <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400">
+                Host: <code className="text-sky-300">sip-pk.gntechnos.com:5060</code>
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-900 rounded-xl border border-slate-700/60 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="text-sm font-bold text-white">Twilio Elastic SIP Trunk</h4>
+                  <span className="text-[11px] font-mono text-emerald-400">Active · RTT: 12.8ms</span>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-sky-950 border border-sky-800 text-sky-300 font-mono font-bold">
+                  GLOBAL
+                </span>
+              </div>
+              <div className="text-xs text-slate-400 space-y-1 font-mono">
+                <div>Route: <strong className="text-slate-200">US & International</strong></div>
+                <div>Channels: <strong className="text-white">32 / 200</strong></div>
+                <div>Dial Prefix: <strong className="text-cyan-300">91 / 9</strong></div>
+              </div>
+              <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400">
+                Host: <code className="text-sky-300">nexus.pstn.twilio.com</code>
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-900 rounded-xl border border-slate-700/60 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="text-sm font-bold text-white">Telnyx High-Volume Trunk</h4>
+                  <span className="text-[11px] font-mono text-emerald-400">Standby · RTT: 14.1ms</span>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-400 font-mono font-bold">
+                  FAILOVER
+                </span>
+              </div>
+              <div className="text-xs text-slate-400 space-y-1 font-mono">
+                <div>Route: <strong className="text-slate-200">Tier-1 PSTN Carrier</strong></div>
+                <div>Channels: <strong className="text-white">0 / 500</strong></div>
+                <div>Dial Prefix: <strong className="text-cyan-300">91</strong></div>
+              </div>
+              <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400">
+                Host: <code className="text-sky-300">sip.telnyx.com</code>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Outbound Dialplan Syntax */}
+          <div className="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-3">
+            <h4 className="text-sm font-bold text-white flex items-center justify-between">
+              <span>VICIdial Carrier Dialplan Syntax (extensions.conf)</span>
+              <span className="text-xs text-slate-400 font-mono">Carrier ID: GN_CARRIER_01</span>
+            </h4>
+            <p className="text-xs text-slate-400">
+              Paste this into your VICIdial Admin Carrier Configuration under <strong>Dialplan Entry</strong> to enable automatic lead call-logging and outbound routing:
+            </p>
+            <pre className="p-4 bg-slate-900/90 rounded-xl text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed border border-slate-800">
+{`; --- VICIdial Production Outbound Dialplan (dialer.gntechnos.com) ---
+; Pakistan Mobile & Landline format
+exten => _923XXXXXXXXX,1,AGI(agi://127.0.0.1:4577/call_log)
+exten => _923XXXXXXXXX,2,Dial(SIP/\${EXTEN}@carrier_trunk,60,tTo)
+exten => _923XXXXXXXXX,3,Hangup
+
+; Local Pakistan format with leading 0 (e.g. 03001234567)
+exten => _03XXXXXXXXX,1,AGI(agi://127.0.0.1:4577/call_log)
+exten => _03XXXXXXXXX,2,Dial(SIP/92\${EXTEN:1}@carrier_trunk,60,tTo)
+exten => _03XXXXXXXXX,3,Hangup
+
+; Global Nexus Auto-Dialer Hopper Return
+exten => 8368,1,Playback(sip-silence)
+exten => 8368,2,AGI(agi://127.0.0.1:4577/call_log)
+exten => 8368,3,AGI(agi-VDAD_ALL_outbound.agi,NORMAL-----LB-----)
+exten => 8368,4,Hangup`}
+            </pre>
+          </div>
+
+          {/* WebRTC Phone Template Instructions */}
+          <div className="bg-slate-900 p-5 rounded-xl border border-slate-700/60 space-y-3">
+            <h4 className="text-sm font-bold text-white">Asterisk WebRTC WSS Phone Template (sip.conf)</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="space-y-1.5 text-slate-300">
+                <div className="font-semibold text-white">WebRTC Settings in VICIdial Admin:</div>
+                <div>• Set <strong className="text-sky-300">Phone Type</strong>: WebRTC</div>
+                <div>• Set <strong className="text-sky-300">WebRTC</strong>: Y</div>
+                <div>• Set <strong className="text-sky-300">DTLS Encryption</strong>: Y</div>
+                <div>• Set <strong className="text-sky-300">Codecs</strong>: opus, ulaw</div>
+                <div>• Set <strong className="text-sky-300">AVPF</strong>: Y</div>
+              </div>
+              <div className="space-y-1.5 text-slate-300">
+                <div className="font-semibold text-white">Network & Firewall Ports:</div>
+                <div>• WebSocket WSS: <strong className="text-emerald-400">8089 (TCP)</strong></div>
+                <div>• SIP Signaling: <strong className="text-emerald-400">5060 (UDP/TCP)</strong></div>
+                <div>• WebRTC RTP Voice Media: <strong className="text-emerald-400">10000 - 20000 (UDP)</strong></div>
+                <div>• STUN Server: <strong className="text-cyan-300">stun:stun.l.google.com:19302</strong></div>
+              </div>
+            </div>
           </div>
         </div>
       )}
