@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title|default("Grainbox") }}</title>
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --nexus-bg: #090d16;
+            --nexus-card-bg: #0f172a;
+            --nexus-border: rgba(255, 255, 255, 0.1);
+            --nexus-primary: #0284c7;
+        }
+        body {
+            background-color: var(--nexus-bg);
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(circle at 50% 10%, rgba(2, 132, 199, 0.15) 0%, transparent 60%);
+        }
+        .login-card {
+            background: var(--nexus-card-bg);
+            border: 1px solid var(--nexus-border);
+            border-radius: 18px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+        .form-control, .form-select {
+            background-color: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            font-size: 0.9rem;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #1e293b;
+            color: #ffffff;
+            border-color: #0284c7;
+            box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.25);
+        }
+        .btn-role-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-auto py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-5">
+                
+                <!-- Brand Lockup -->
+                <div class="text-center mb-4">
+                    <a href="{{ url_for('index') }}" class="text-decoration-none d-inline-flex align-items-center gap-2 mb-2">
+                        <div class="bg-primary rounded-3 p-2 text-white shadow-sm">
+                            <i class="bi bi-broadcast-pin fs-4"></i>
+                        </div>
+                        <span class="fs-4 fw-bold text-white tracking-tight">Grainbox</span>
+                    </a>
+                    <p class="text-muted small mb-0">VICIdial Client Telephony Gateway · dialer.gntechnos.com</p>
+                </div>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show text-xs py-2 mb-3" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close btn-close-white p-2" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Main Card -->
+                <div class="login-card p-4 p-md-5">
+                    
+                    <!-- Role Switcher Tabs -->
+                    <div class="d-flex bg-dark p-1 rounded-3 mb-4 border border-secondary border-opacity-25">
+                        <a href="{{ url_for('login', role='agent') }}" class="btn-role-tab flex-fill text-center {{ 'bg-primary text-white shadow-sm' if role == 'agent' else 'text-secondary hover-text-white' }}">
+                            <i class="bi bi-headset me-1"></i> Agent Portal
+                        </a>
+                        <a href="{{ url_for('login', role='admin') }}" class="btn-role-tab flex-fill text-center {{ 'bg-indigo text-white shadow-sm' if role == 'admin' else 'text-secondary hover-text-white' }}" style="{{ 'background-color: #4f46e5 !important;' if role == 'admin' else '' }}">
+                            <i class="bi bi-shield-lock me-1"></i> Admin Portal
+                        </a>
+                    </div>
+
+                    {% if role == 'agent' %}
+                    <!-- AGENT LOGIN FORM -->
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="bg-info bg-opacity-10 p-3 rounded-circle text-info border border-info border-opacity-25">
+                            <i class="bi bi-headset fs-3"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold mb-0 text-white">Agent Web Station</h4>
+                            <span class="text-info small font-monospace">WebRTC Softphone Station</span>
+                        </div>
+                    </div>
+
+                    <form action="{{ url_for('login', role='agent', next=request.args.get('next', '')) }}" method="POST">
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small text-secondary mb-1">Phone Login</label>
+                                <input type="text" name="phone_login" class="form-control font-monospace" placeholder="1004" value="1004" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small text-secondary mb-1">Phone Password</label>
+                                <input type="password" name="phone_pass" class="form-control" placeholder="••••••••" value="password123" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small text-secondary mb-1">User Login (Agent ID)</label>
+                                <input type="text" name="username" class="form-control font-monospace" placeholder="1004" value="{{ prefill_user|default('1004') }}" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small text-secondary mb-1">User Password</label>
+                                <input type="password" name="password" class="form-control" placeholder="••••••••" value="password123" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small text-secondary mb-1">Campaign Queue</label>
+                            <select name="campaign" class="form-select font-sans">
+                                <option value="SOLAR_OUT_Q4">SOLAR_OUT_Q4 - Residential Clean Energy (Ratio 2.8x)</option>
+                                <option value="INBOUND_CARE">INBOUND_CARE - Global Nexus Support Queue</option>
+                                <option value="HEALTH_MED_A">HEALTH_MED_A - Telesales Advantage</option>
+                                <option value="B2B_LEADS_US">B2B_LEADS_US - North America Enterprise B2B</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Launch Agent Console &rarr;
+                        </button>
+                    </form>
+                    
+                    <div class="mt-3 p-2 bg-dark rounded border border-secondary border-opacity-25 text-center text-xs text-muted font-monospace">
+                        Default Demo Agent: <strong>1004</strong> / Pass: <strong>password123</strong>
+                    </div>
+
+                    {% else %}
+                    <!-- ADMIN LOGIN FORM -->
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary border border-primary border-opacity-25">
+                            <i class="bi bi-shield-lock fs-3"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold mb-0 text-white">Administration Console</h4>
+                            <span class="text-primary small font-monospace">Campaign & Hopper Control</span>
+                        </div>
+                    </div>
+
+                    <form action="{{ url_for('login', role='admin', next=request.args.get('next', '')) }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary mb-1">Admin Username</label>
+                            <input type="text" name="username" class="form-control font-monospace" placeholder="admin" value="{{ prefill_user|default('admin') }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary mb-1">Admin Password</label>
+                            <input type="password" name="password" class="form-control" placeholder="••••••••" value="adminpassword123" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small text-secondary mb-1">Security Token / 2FA (Optional)</label>
+                            <input type="text" class="form-control font-monospace" placeholder="GRAINBOX-AUTH-TOKEN">
+                        </div>
+
+                        <button type="submit" class="btn w-100 py-2 fw-semibold text-white shadow-sm" style="background-color: #4f46e5;">
+                            <i class="bi bi-lock-fill me-1"></i> Authenticate Administrator &rarr;
+                        </button>
+                    </form>
+
+                    <div class="mt-3 p-2 bg-dark rounded border border-secondary border-opacity-25 text-center text-xs text-muted font-monospace">
+                        Default Demo Admin: <strong>admin</strong> / Pass: <strong>adminpassword123</strong>
+                    </div>
+                    {% endif %}
+
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('index') }}" class="text-decoration-none text-muted small">
+                            <i class="bi bi-arrow-left"></i> Return to Gateway Home
+                        </a>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4 text-muted small">
+                    Powered By <strong>Global Nexus Technos</strong>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
