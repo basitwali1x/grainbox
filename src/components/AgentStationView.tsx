@@ -51,7 +51,29 @@ const APA_LEADS_QUEUE: QueuedLead[] = [
   { id: '101-05', phone: '03123456789', first_name: 'Zainab', last_name: 'Fatima', city: 'Faisalabad', status: 'PENDING' },
   { id: '101-06', phone: '03017654321', first_name: 'Ali', last_name: 'Raza', city: 'Multan', status: 'PENDING' },
   { id: '101-07', phone: '03224433221', first_name: 'Farhan', last_name: 'Siddiqui', city: 'Sialkot', status: 'PENDING' },
-  { id: '101-08', phone: '03348877665', first_name: 'Sana', last_name: 'Javed', city: 'Gujranwala', status: 'PENDING' }
+  { id: '101-08', phone: '03348877665', first_name: 'Sana', last_name: 'Javed', city: 'Gujranwala', status: 'PENDING' },
+  { id: '101-09', phone: '03469988776', first_name: 'Omer', last_name: 'Farooq', city: 'Peshawar', status: 'PENDING' },
+  { id: '101-10', phone: '03135544332', first_name: 'Hassan', last_name: 'Sheikh', city: 'Quetta', status: 'PENDING' },
+  { id: '101-11', phone: '03023344556', first_name: 'Naveed', last_name: 'Akram', city: 'Lahore', status: 'PENDING' },
+  { id: '101-12', phone: '03236677889', first_name: 'Mariam', last_name: 'Bibi', city: 'Karachi', status: 'PENDING' },
+  { id: '101-13', phone: '03357788990', first_name: 'Taimoor', last_name: 'Shah', city: 'Islamabad', status: 'PENDING' },
+  { id: '101-14', phone: '03471199223', first_name: 'Khadija', last_name: 'Zehra', city: 'Rawalpindi', status: 'PENDING' },
+  { id: '101-15', phone: '03142288334', first_name: 'Waqas', last_name: 'Bashir', city: 'Faisalabad', status: 'PENDING' },
+  { id: '101-16', phone: '03038899001', first_name: 'Rabia', last_name: 'Noor', city: 'Multan', status: 'PENDING' },
+  { id: '101-17', phone: '03241133557', first_name: 'Danish', last_name: 'Iqbal', city: 'Sialkot', status: 'PENDING' },
+  { id: '101-18', phone: '03362244668', first_name: 'Hina', last_name: 'Altaf', city: 'Gujranwala', status: 'PENDING' },
+  { id: '101-19', phone: '03483355779', first_name: 'Saad', last_name: 'Rehman', city: 'Peshawar', status: 'PENDING' },
+  { id: '101-20', phone: '03154466880', first_name: 'Zeeshan', last_name: 'Haider', city: 'Quetta', status: 'PENDING' },
+  { id: '101-21', phone: '03045577991', first_name: 'Asad', last_name: 'Mahmood', city: 'Lahore', status: 'PENDING' },
+  { id: '101-22', phone: '03256688002', first_name: 'Bushra', last_name: 'Qasim', city: 'Karachi', status: 'PENDING' },
+  { id: '101-23', phone: '03377799113', first_name: 'Kamran', last_name: 'Latif', city: 'Islamabad', status: 'PENDING' },
+  { id: '101-24', phone: '03498800224', first_name: 'Mehak', last_name: 'Arshad', city: 'Rawalpindi', status: 'PENDING' },
+  { id: '101-25', phone: '03169911335', first_name: 'Fahad', last_name: 'Mustafa', city: 'Faisalabad', status: 'PENDING' },
+  { id: '101-26', phone: '03051299887', first_name: 'Rashid', last_name: 'Minhas', city: 'Multan', status: 'PENDING' },
+  { id: '101-27', phone: '03264488112', first_name: 'Nimra', last_name: 'Sohail', city: 'Lahore', status: 'PENDING' },
+  { id: '101-28', phone: '03387711223', first_name: 'Adeel', last_name: 'Farid', city: 'Karachi', status: 'PENDING' },
+  { id: '101-29', phone: '03418822334', first_name: 'Sumbul', last_name: 'Jameel', city: 'Islamabad', status: 'PENDING' },
+  { id: '101-30', phone: '03173344556', first_name: 'Zubair', last_name: 'Shahid', city: 'Rawalpindi', status: 'PENDING' }
 ];
 
 export const AgentStationView: React.FC<AgentStationViewProps> = ({ onBack }) => {
@@ -292,12 +314,54 @@ export const AgentStationView: React.FC<AgentStationViewProps> = ({ onBack }) =>
     setCallState('RINGING');
     startRingtone();
 
-    // Auto connect outbound call after 2.5 seconds
+    // Auto connect outbound call after 2 seconds
     setTimeout(() => {
       stopRingtone();
       setCallState('INCALL');
       setCallDuration(0);
-    }, 2500);
+    }, 2000);
+  };
+
+  const handleNextLead = (autoDial = true) => {
+    stopRingtone();
+    setCallState('IDLE');
+    setCallDuration(0);
+    setCurrentLeadIndex(prev => {
+      const nextIdx = (prev + 1) % leadsQueue.length;
+      if (autoDial) {
+        setTimeout(() => {
+          setCallState('RINGING');
+          startRingtone();
+          setTimeout(() => {
+            stopRingtone();
+            setCallState('INCALL');
+            setCallDuration(0);
+          }, 2000);
+        }, 300);
+      }
+      return nextIdx;
+    });
+  };
+
+  const handlePrevLead = (autoDial = true) => {
+    stopRingtone();
+    setCallState('IDLE');
+    setCallDuration(0);
+    setCurrentLeadIndex(prev => {
+      const prevIdx = (prev - 1 + leadsQueue.length) % leadsQueue.length;
+      if (autoDial) {
+        setTimeout(() => {
+          setCallState('RINGING');
+          startRingtone();
+          setTimeout(() => {
+            stopRingtone();
+            setCallState('INCALL');
+            setCallDuration(0);
+          }, 2000);
+        }, 300);
+      }
+      return prevIdx;
+    });
   };
 
   const handleFinishDispo = (dispo: string) => {
@@ -310,7 +374,10 @@ export const AgentStationView: React.FC<AgentStationViewProps> = ({ onBack }) =>
     setLeadsQueue(prev => {
       const copy = [...prev];
       if (copy[currentLeadIndex]) {
-        copy[currentLeadIndex].status = dispo as any;
+        copy[currentLeadIndex] = {
+          ...copy[currentLeadIndex],
+          status: dispo as any
+        };
       }
       return copy;
     });
@@ -319,16 +386,22 @@ export const AgentStationView: React.FC<AgentStationViewProps> = ({ onBack }) =>
     setCallNotes('');
     setCallState('IDLE');
     setCallDuration(0);
+    stopRingtone();
 
-    // Advance to next lead in queue
-    const nextIdx = (currentLeadIndex + 1) % leadsQueue.length;
-    setCurrentLeadIndex(nextIdx);
-
-    // Queue next call after 4 seconds
-    setTimeout(() => {
-      setCallState('RINGING');
-      startRingtone();
-    }, 4000);
+    // Advance to next lead in queue and auto-dial
+    setCurrentLeadIndex(prev => {
+      const nextIdx = (prev + 1) % leadsQueue.length;
+      setTimeout(() => {
+        setCallState('RINGING');
+        startRingtone();
+        setTimeout(() => {
+          stopRingtone();
+          setCallState('INCALL');
+          setCallDuration(0);
+        }, 2000);
+      }, 2500);
+      return nextIdx;
+    });
   };
 
   // Station Login View
@@ -597,7 +670,7 @@ export const AgentStationView: React.FC<AgentStationViewProps> = ({ onBack }) =>
                 </div>
 
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-bold text-white">
                       {callState === 'INCALL' ? (isOnHold ? 'CALL ON HOLD' : 'LIVE CALL IN PROGRESS (WebRTC AUDIO)') :
                        callState === 'RINGING' ? 'INCOMING CALL ROUTED TO STATION...' :
@@ -609,6 +682,9 @@ export const AgentStationView: React.FC<AgentStationViewProps> = ({ onBack }) =>
                         {formatSeconds(callDuration)}
                       </span>
                     )}
+                    <span className="text-xs font-mono bg-sky-950/80 text-sky-300 px-2.5 py-0.5 rounded-full border border-sky-800/60">
+                      Lead {currentLeadIndex + 1} of {leadsQueue.length}
+                    </span>
                   </div>
                   <p className="text-xs text-slate-300 mt-0.5">
                     Lead ID: <span className="font-mono text-cyan-300">#{currentLead.id}</span> · Customer: <strong className="text-white">{currentLead.first_name} {currentLead.last_name}</strong> · Phone: <span className="font-mono text-emerald-300 font-bold">{currentLead.phone}</span> ({currentLead.city})
@@ -617,7 +693,24 @@ export const AgentStationView: React.FC<AgentStationViewProps> = ({ onBack }) =>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* Lead Navigation Controls */}
+                <button
+                  onClick={() => handlePrevLead(true)}
+                  className="px-2.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs flex items-center gap-1 border border-slate-700 transition-colors cursor-pointer"
+                  title="Go to previous lead in queue"
+                >
+                  <span>« Prev</span>
+                </button>
+
+                <button
+                  onClick={() => handleNextLead(true)}
+                  className="px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1 shadow-md shadow-sky-600/20 transition-colors cursor-pointer"
+                  title="Advance to next lead in queue"
+                >
+                  <span>Next Lead »</span>
+                </button>
+
                 {callState === 'RINGING' && (
                   <button
                     onClick={handleAnswerCall}
@@ -667,19 +760,7 @@ export const AgentStationView: React.FC<AgentStationViewProps> = ({ onBack }) =>
                       className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/20 flex items-center gap-1.5 cursor-pointer"
                     >
                       <PhoneCall className="w-4 h-4" />
-                      <span>Dial Current Lead</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setCallState('RINGING');
-                        startRingtone();
-                      }}
-                      className="px-3 py-2 bg-slate-800 border border-slate-700 text-slate-300 hover:text-white rounded-xl text-xs flex items-center gap-1"
-                      title="Trigger next lead simulation"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-sky-400" />
-                      <span>Simulate Next</span>
+                      <span>Dial Lead</span>
                     </button>
                   </>
                 )}

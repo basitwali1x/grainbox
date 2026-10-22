@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title|default("Grainbox") }}</title>
+    <title>{{ title|default("Grainbox - Agent Station") }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         body {
             background-color: #090d16;
@@ -19,12 +19,29 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 14px;
         }
+        .table-dark {
+            --bs-table-bg: #090d16;
+            --bs-table-striped-bg: #0d1322;
+            --bs-table-border-color: rgba(255, 255, 255, 0.08);
+        }
+        .lead-row-active {
+            background-color: rgba(14, 165, 233, 0.15) !important;
+            border-left: 3px solid #0ea5e9;
+        }
+        .pulse-call {
+            animation: pulse-border 1.5s infinite;
+        }
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
     </style>
 </head>
 <body>
     <!-- Top Station Header -->
     <header class="py-2.5 px-3 bg-dark border-bottom border-secondary border-opacity-50">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
+        <div class="container-fluid d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
                 <span class="badge bg-primary px-2 py-1 fs-6"><i class="bi bi-headset"></i></span>
                 <span class="fw-bold text-white">VICIdial Web Station</span>
@@ -35,6 +52,7 @@
                 <span class="text-secondary">Agent: <strong class="text-white">{{ user }}</strong></span>
                 <span class="text-secondary">Ext: <strong class="text-info">{{ extension }}</strong></span>
                 <span class="text-secondary">Campaign: <strong class="text-warning">{{ campaign }}</strong></span>
+                <span class="text-secondary">Hopper Source: <strong class="text-success">Apa.csv</strong></span>
                 <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-danger py-0 px-2">
                     <i class="bi bi-power"></i> Log Out
                 </a>
@@ -43,55 +61,364 @@
     </header>
 
     <div class="container-fluid py-4 px-md-4">
-        <div class="row g-3">
-            <!-- Active Call Stream Area -->
-            <div class="col-12 col-lg-8">
-                <div class="agent-card p-4 mb-3 border-success border-opacity-50 bg-success bg-opacity-10">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="bg-success text-white rounded-circle p-3 fs-3">
-                                <i class="bi bi-telephone-inbound-fill"></i>
-                            </div>
-                            <div>
-                                <h5 class="fw-bold text-white mb-0">LIVE CALL IN PROGRESS</h5>
-                                <p class="small text-secondary mb-0">Lead: #1049281 · Customer: <strong class="text-white">Robert Vance Jr.</strong> · Phone: <span class="font-monospace text-info">+1 (555) 382-9011</span></p>
-                            </div>
+        
+        <!-- Live Call Banner -->
+        <div id="callBanner" class="agent-card p-4 mb-3 border-success border-opacity-50 bg-success bg-opacity-10 pulse-call">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div id="callIcon" class="bg-success text-white rounded-circle p-3 fs-3">
+                        <i class="bi bi-telephone-inbound-fill"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h5 id="callStatusText" class="fw-bold text-white mb-0">LIVE CALL IN PROGRESS</h5>
+                            <span id="callTimerBadge" class="badge bg-success font-monospace fs-6">00:00</span>
+                            <span id="leadProgressBadge" class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 font-monospace">Lead 1 of 30</span>
                         </div>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-warning btn-sm" onclick="alert('Microphone toggled');"><i class="bi bi-mic-mute"></i> Mute</button>
-                            <button class="btn btn-danger btn-sm" onclick="alert('Call hung up. Ready for disposition.');"><i class="bi bi-telephone-x"></i> Hangup</button>
-                        </div>
+                        <p class="small text-secondary mb-0 mt-1">
+                            Lead ID: <span id="leadIdText" class="font-monospace text-warning">#1001</span> · 
+                            Customer: <strong id="customerNameText" class="text-white">Hamza Khan</strong> · 
+                            Phone: <span id="customerPhoneText" class="font-monospace text-info fw-bold">03001234567</span> · 
+                            City: <span id="customerCityText" class="text-light">Lahore</span>
+                        </p>
                     </div>
                 </div>
 
-                <!-- Script Pane -->
-                <div class="agent-card p-4">
-                    <h6 class="fw-bold text-info mb-3"><i class="bi bi-file-earmark-text me-1"></i> Campaign Script (SOLAR_OUT_Q4)</h6>
-                    <div class="p-3 bg-dark rounded border border-secondary border-opacity-25 small leading-relaxed">
-                        <p class="mb-2">"Hello, my name is <strong>{{ user }}</strong> with the Grainbox Clean Energy initiative. How are you today?"</p>
-                        <p class="text-muted mb-0">"We are verifying qualified homeowners in your zip code for the 0% upfront residential solar rebate program..."</p>
-                    </div>
+                <!-- Call Control Actions -->
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-outline-light" onclick="prevLead()" title="Skip to previous lead">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </button>
+                    <button class="btn btn-sm btn-outline-info" onclick="nextLead(true)" title="Skip to next lead">
+                        Next Lead <i class="bi bi-chevron-right"></i>
+                    </button>
+                    <button id="muteBtn" class="btn btn-warning btn-sm" onclick="toggleMute()">
+                        <i class="bi bi-mic"></i> <span id="muteLabel">Mute</span>
+                    </button>
+                    <button id="hangupBtn" class="btn btn-danger btn-sm" onclick="hangupCall()">
+                        <i class="bi bi-telephone-x"></i> Hangup
+                    </button>
+                    <button id="dialBtn" class="btn btn-success btn-sm d-none" onclick="dialCurrentLead()">
+                        <i class="bi bi-telephone-outbound"></i> Dial Lead
+                    </button>
                 </div>
             </div>
+        </div>
 
-            <!-- Dispositions Pane -->
-            <div class="col-12 col-lg-4">
-                <div class="agent-card p-4">
-                    <h6 class="fw-bold text-white mb-3"><i class="bi bi-tags me-1"></i> Dispositions</h6>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6"><button class="btn btn-success w-100 btn-sm py-2 fw-bold" onclick="alert('Sale Verified logged!')">SALE</button></div>
-                        <div class="col-6"><button class="btn btn-primary w-100 btn-sm py-2 fw-bold" onclick="alert('Call Back scheduled!')">CALLBK</button></div>
-                        <div class="col-6"><button class="btn btn-secondary w-100 btn-sm py-2 fw-bold" onclick="alert('Not Interested logged!')">NI</button></div>
-                        <div class="col-6"><button class="btn btn-danger w-100 btn-sm py-2 fw-bold" onclick="alert('DNC registered!')">DNC</button></div>
+        <div class="row g-3">
+            <!-- Left Column: Script & Hopper Leads Table -->
+            <div class="col-12 col-lg-8">
+                
+                <!-- Campaign Script Pane -->
+                <div class="agent-card p-4 mb-3">
+                    <h6 class="fw-bold text-info mb-3 d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-file-earmark-text me-1"></i> Campaign Script ({{ campaign }})</span>
+                        <span class="badge bg-secondary font-monospace">Dial Level: 2.8x</span>
+                    </h6>
+                    <div class="p-3 bg-dark rounded border border-secondary border-opacity-25 small leading-relaxed">
+                        <p class="mb-2">"Assalam-o-Alaikum / Hello, may I please speak with <strong id="scriptCustomerName" class="text-warning">Hamza Khan</strong>? My name is <strong>{{ user }}</strong> with Grainbox Solutions in <span id="scriptCustomerCity" class="text-info">Lahore</span>."</p>
+                        <p class="text-muted mb-2">"We are verifying qualified customers in your area for verified telecom trunking and clean power rebates at your number <strong id="scriptCustomerPhone" class="text-success font-monospace">03001234567</strong>."</p>
+                        <div class="p-2 bg-black bg-opacity-40 rounded border-start border-3 border-info text-secondary">
+                            *Advance to disposition SALE or CALLBK when customer confirms interest.*
+                        </div>
                     </div>
+                </div>
+
+                <!-- Apa.csv Hopper Leads Queue Table -->
+                <div class="agent-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold text-white mb-0">
+                            <i class="bi bi-database me-1 text-success"></i> Apa.csv Lead Hopper Queue (<span id="totalLeadsCount">30</span> Leads)
+                        </h6>
+                        <span class="badge bg-dark border border-secondary text-secondary font-monospace">1-Click Manual or Auto-Dial</span>
+                    </div>
+
+                    <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                        <table class="table table-dark table-striped table-hover small mb-0 align-middle">
+                            <thead class="sticky-top bg-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Customer Name</th>
+                                    <th>Phone Number</th>
+                                    <th>City</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leadsTableBody">
+                                <!-- Populated dynamically by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Dispositions & Session Tally -->
+            <div class="col-12 col-lg-4">
+                <div class="agent-card p-4 mb-3">
+                    <h6 class="fw-bold text-white mb-2"><i class="bi bi-tags me-1 text-warning"></i> Call Dispositions</h6>
+                    <p class="small text-secondary mb-3">Selecting a disposition commits the record and immediately advances to the next lead in the hopper queue:</p>
+                    
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <button class="btn btn-success w-100 btn-sm py-2 fw-bold" onclick="commitDispo('SALE')">
+                                SALE <small class="d-block opacity-75">Verified</small>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-primary w-100 btn-sm py-2 fw-bold" onclick="commitDispo('CALLBK')">
+                                CALLBK <small class="d-block opacity-75">Call Back</small>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-secondary w-100 btn-sm py-2 fw-bold" onclick="commitDispo('NI')">
+                                NI <small class="d-block opacity-75">Not Interested</small>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-danger w-100 btn-sm py-2 fw-bold" onclick="commitDispo('DNC')">
+                                DNC <small class="d-block opacity-75">Do Not Call</small>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-warning w-100 btn-sm py-2" onclick="commitDispo('BUSY')">
+                                BUSY <small class="d-block opacity-75">Line Busy</small>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-light w-100 btn-sm py-2" onclick="commitDispo('DROP')">
+                                DROP <small class="d-block opacity-75">Customer Hungup</small>
+                            </button>
+                        </div>
+                    </div>
+
                     <label class="small text-secondary mb-1">Call Notes</label>
-                    <textarea class="form-control bg-dark text-white border-secondary small mb-3" rows="3" placeholder="Enter customer details..."></textarea>
+                    <textarea id="callNotesInput" class="form-control bg-dark text-white border-secondary small mb-3" rows="2" placeholder="Customer notes or call summary..."></textarea>
+                    
+                    <div class="d-flex justify-content-between p-2 bg-dark rounded border border-secondary border-opacity-25 small font-monospace mb-3">
+                        <span class="text-secondary">Sales Verified: <strong id="salesCountText" class="text-success">0</strong></span>
+                        <span class="text-secondary">Calls Handled: <strong id="callsCountText" class="text-info">0</strong></span>
+                    </div>
+
                     <a href="{{ url_for('index') }}" class="btn btn-outline-secondary w-100 btn-sm">
-                        <i class="bi bi-house me-1"></i> Return to Gateway
+                        <i class="bi bi-house me-1"></i> Return to Gateway Home
                     </a>
+                </div>
+
+                <!-- WebRTC Diagnostics Card -->
+                <div class="agent-card p-3 text-secondary small font-monospace">
+                    <div class="text-white fw-bold mb-1"><i class="bi bi-broadcast me-1 text-info"></i> Station Diagnostics</div>
+                    <div class="d-flex justify-content-between"><span>SIP Gateway:</span> <span class="text-white">{{ server_ip }}</span></div>
+                    <div class="d-flex justify-content-between"><span>WebRTC WSS:</span> <span class="text-success">8089 (Active)</span></div>
+                    <div class="d-flex justify-content-between"><span>Codec:</span> <span class="text-info">Opus 48kHz</span></div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Dynamic Lead Queue & Dialing JavaScript Engine -->
+    <script>
+        // Load real leads passed from Flask or fallback dataset
+        const LEADS = {{ leads_json|safe if leads_json else '[]' }};
+        
+        let currentIndex = 0;
+        let callState = 'INCALL'; // 'INCALL', 'RINGING', 'IDLE', 'DISPO'
+        let callSeconds = 0;
+        let callTimer = null;
+        let isMuted = false;
+        let salesCount = 0;
+        let callsCount = 0;
+
+        function initStation() {
+            if (LEADS.length === 0) {
+                // Fallback 5 leads if empty
+                LEADS.push(
+                    { id: '1001', phone: '03001234567', first_name: 'Hamza', last_name: 'Khan', city: 'Lahore', status: 'PENDING' },
+                    { id: '1002', phone: '03219876543', first_name: 'Usman', last_name: 'Tariq', city: 'Karachi', status: 'PENDING' },
+                    { id: '1003', phone: '03335551212', first_name: 'Ayesha', last_name: 'Malik', city: 'Islamabad', status: 'PENDING' },
+                    { id: '1004', phone: '03451122334', first_name: 'Bilal', last_name: 'Ahmed', city: 'Rawalpindi', status: 'PENDING' },
+                    { id: '1005', phone: '03123456789', first_name: 'Zainab', last_name: 'Fatima', city: 'Faisalabad', status: 'PENDING' }
+                );
+            }
+
+            document.getElementById('totalLeadsCount').innerText = LEADS.length;
+            renderLeadsTable();
+            loadLead(0, true);
+        }
+
+        function loadLead(index, startCall) {
+            if (index < 0 || index >= LEADS.length) return;
+            currentIndex = index;
+            const lead = LEADS[currentIndex];
+
+            // Update DOM fields
+            document.getElementById('leadIdText').innerText = '#' + lead.id;
+            document.getElementById('customerNameText').innerText = lead.first_name + ' ' + lead.last_name;
+            document.getElementById('customerPhoneText').innerText = lead.phone;
+            document.getElementById('customerCityText').innerText = lead.city;
+            document.getElementById('leadProgressBadge').innerText = `Lead ${currentIndex + 1} of ${LEADS.length}`;
+
+            // Update script
+            document.getElementById('scriptCustomerName').innerText = lead.first_name + ' ' + lead.last_name;
+            document.getElementById('scriptCustomerCity').innerText = lead.city;
+            document.getElementById('scriptCustomerPhone').innerText = lead.phone;
+
+            highlightActiveRow();
+
+            if (startCall) {
+                connectCall();
+            }
+        }
+
+        function renderLeadsTable() {
+            const tbody = document.getElementById('leadsTableBody');
+            tbody.innerHTML = '';
+
+            LEADS.forEach((lead, idx) => {
+                const tr = document.createElement('tr');
+                tr.id = `lead-row-${idx}`;
+                tr.className = idx === currentIndex ? 'lead-row-active' : '';
+
+                tr.innerHTML = `
+                    <td class="font-monospace text-secondary">${idx + 1}</td>
+                    <td><strong>${lead.first_name} ${lead.last_name}</strong></td>
+                    <td class="font-monospace text-info">${lead.phone}</td>
+                    <td>${lead.city}</td>
+                    <td>
+                        <span id="badge-${idx}" class="badge ${getStatusBadgeClass(lead.status)}">
+                            ${lead.status}
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <button class="btn btn-xs btn-outline-success py-0 px-2" onclick="selectAndDial(${idx})">
+                            <i class="bi bi-telephone-fill"></i> Dial
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function getStatusBadgeClass(status) {
+            switch(status) {
+                case 'SALE': return 'bg-success';
+                case 'CALLBK': return 'bg-primary';
+                case 'NI': return 'bg-secondary';
+                case 'DNC': return 'bg-danger';
+                case 'BUSY': return 'bg-warning text-dark';
+                case 'DROP': return 'bg-dark border border-secondary';
+                default: return 'bg-secondary bg-opacity-50 text-secondary';
+            }
+        }
+
+        function highlightActiveRow() {
+            LEADS.forEach((_, idx) => {
+                const row = document.getElementById(`lead-row-${idx}`);
+                if (row) {
+                    if (idx === currentIndex) {
+                        row.classList.add('lead-row-active');
+                    } else {
+                        row.classList.remove('lead-row-active');
+                    }
+                }
+            });
+        }
+
+        function selectAndDial(idx) {
+            loadLead(idx, true);
+        }
+
+        function nextLead(autoDial = true) {
+            const nextIdx = (currentIndex + 1) % LEADS.length;
+            loadLead(nextIdx, autoDial);
+        }
+
+        function prevLead() {
+            const prevIdx = (currentIndex - 1 + LEADS.length) % LEADS.length;
+            loadLead(prevIdx, true);
+        }
+
+        function connectCall() {
+            clearInterval(callTimer);
+            callState = 'INCALL';
+            callSeconds = 0;
+            updateTimerDisplay();
+
+            const banner = document.getElementById('callBanner');
+            banner.className = 'agent-card p-4 mb-3 border-success border-opacity-50 bg-success bg-opacity-10 pulse-call';
+
+            document.getElementById('callStatusText').innerText = 'LIVE CALL IN PROGRESS';
+            document.getElementById('callIcon').className = 'bg-success text-white rounded-circle p-3 fs-3';
+            document.getElementById('callIcon').innerHTML = '<i class="bi bi-telephone-inbound-fill"></i>';
+
+            document.getElementById('hangupBtn').classList.remove('d-none');
+            document.getElementById('muteBtn').classList.remove('d-none');
+            document.getElementById('dialBtn').classList.add('d-none');
+
+            callTimer = setInterval(() => {
+                callSeconds++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function hangupCall() {
+            clearInterval(callTimer);
+            callState = 'DISPO';
+
+            const banner = document.getElementById('callBanner');
+            banner.className = 'agent-card p-4 mb-3 border-warning border-opacity-50 bg-warning bg-opacity-10';
+
+            document.getElementById('callStatusText').innerText = 'CALL CONCLUDED - SELECT DISPOSITION';
+            document.getElementById('callIcon').className = 'bg-warning text-dark rounded-circle p-3 fs-3';
+            document.getElementById('callIcon').innerHTML = '<i class="bi bi-telephone-x-fill"></i>';
+
+            document.getElementById('hangupBtn').classList.add('d-none');
+            document.getElementById('dialBtn').classList.remove('d-none');
+        }
+
+        function dialCurrentLead() {
+            connectCall();
+        }
+
+        function commitDispo(dispoCode) {
+            callsCount++;
+            document.getElementById('callsCountText').innerText = callsCount;
+
+            if (dispoCode === 'SALE') {
+                salesCount++;
+                document.getElementById('salesCountText').innerText = salesCount;
+            }
+
+            // Update active lead status
+            LEADS[currentIndex].status = dispoCode;
+            const badge = document.getElementById(`badge-${currentIndex}`);
+            if (badge) {
+                badge.className = `badge ${getStatusBadgeClass(dispoCode)}`;
+                badge.innerText = dispoCode;
+            }
+
+            // Clear notes
+            document.getElementById('callNotesInput').value = '';
+
+            // Automatically advance to NEXT lead in queue!
+            nextLead(true);
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            document.getElementById('muteLabel').innerText = isMuted ? 'Unmute' : 'Mute';
+            document.getElementById('muteBtn').className = isMuted ? 'btn btn-outline-danger btn-sm' : 'btn btn-warning btn-sm';
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(callSeconds / 60).toString().padStart(2, '0');
+            const s = (callSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('callTimerBadge').innerText = `${m}:${s}`;
+        }
+
+        // Initialize when page loads
+        window.onload = initStation;
+    </script>
 </body>
 </html>

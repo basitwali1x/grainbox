@@ -15,6 +15,7 @@ Features:
 import os
 import io
 import csv
+import json
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import (
@@ -301,13 +302,37 @@ def login():
         current_year=datetime.now().year
     )
 
+def load_apa_leads():
+    """Loads leads from Apa.csv or falls back to leads_10k.csv for the campaign hopper."""
+    leads = []
+    csv_file = "Apa.csv" if os.path.exists("Apa.csv") else "leads_10k.csv"
+    try:
+        with open(csv_file, mode="r", encoding="utf-8-sig", errors="replace") as f:
+            reader = csv.DictReader(f)
+            for idx, raw_row in enumerate(reader, start=1):
+                row = {k.strip().lower().replace(' ', '_'): v.strip() for k, v in raw_row.items() if k}
+                phone = row.get('phone') or row.get('phone_number') or row.get('mobile') or ''
+                if phone:
+                    leads.append({
+                        "id": str(1000 + idx),
+                        "phone": phone,
+                        "first_name": row.get('first_name') or row.get('fname') or 'Client',
+                        "last_name": row.get('last_name') or row.get('lname') or '',
+                        "city": row.get('city') or 'Lahore',
+                        "status": "PENDING"
+                    })
+    except Exception as e:
+        print(f"[!] Warning reading {csv_file}: {e}")
+    return leads
+
 @app.route("/agent")
 @login_required
 @role_required("agent")
 def agent_workspace():
     """
-    3a. Agent Session Workspace: Protected WebRTC dialer console
+    3a. Agent Session Workspace: Protected WebRTC dialer console with dynamic lead hopper
     """
+    apa_leads = load_apa_leads()
     return render_template(
         "agent.html",
         title="Grainbox - Agent Station",
@@ -315,7 +340,9 @@ def agent_workspace():
         extension=session.get("extension"),
         campaign=session.get("campaign"),
         login_time=session.get("login_time"),
-        server_ip="dialer.gntechnos.com"
+        server_ip="dialer.gntechnos.com",
+        leads=apa_leads,
+        leads_json=json.dumps(apa_leads)
     )
 
 @app.route("/admin")
